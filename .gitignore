@@ -1,33 +1,50 @@
-HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# Игнорировать файлы, специфичные для IDE
+.idea/
 *.iml
 *.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
+*.iws
 .vscode/
+*.swp
+*.swo
+
+# Игнорировать скомпилированные файлы
+/target/
+/target/**
+!/target/*.jar
+!/target/*.war
+/build/
+/out/
+/bin/
+
+# Игнорировать логи и временные файлы
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Игнорировать файлы зависимостей
+/.mvn/
+/mvnw
+/mvnw.cmd
+
+# Игнорировать файлы конфигурации
+/.DS_Store
+/.env
+/.env.local
+/.env.development
+/.env.production
+
+# Игнорировать тестовые отчеты и данные
+/test-output/
+/test-results/
+/coverage/
+/.nyc_output/
+
+# Игнорировать файлы, специфичные для Spring Boot
+/application.properties
+/application.yml
+/logs/
+
+
+
