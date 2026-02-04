@@ -1,4 +1,4 @@
-package ru.danilgordienko.delivery_app.model;
+package ru.danilgordienko.delivery_app.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,6 +14,4 @@ public class Provider {
 
     @Column(unique = true)
     private String name;
-
-
 }

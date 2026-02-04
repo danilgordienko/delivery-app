@@ -1,22 +1,15 @@
 package ru.danilgordienko.delivery_app.service;
 
-
-import org.springframework.stereotype.Service;
-import ru.danilgordienko.delivery_app.model.Provider;
-import ru.danilgordienko.delivery_app.repository.ProviderRepository;
+import ru.danilgordienko.delivery_app.model.dto.ProviderDto;
+import ru.danilgordienko.delivery_app.model.entity.Provider;
 
 import java.util.List;
 
-@Service
-public class ProviderService {
+public interface ProviderService {
 
-    private final ProviderRepository providerRepository;
+    List<ProviderDto> getAllProviders();
 
-    public ProviderService(ProviderRepository providerRepository) {
-        this.providerRepository = providerRepository;
-    }
+    Provider getProviderById(Long id);
 
-    public List<Provider> getAllProviders() {
-        return providerRepository.findAll();
-    }
+    ProviderDto getProviderDtoById(Long id);
 }

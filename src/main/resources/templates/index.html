@@ -1,115 +1,236 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Delivery Form</title>
+    <title>Delivery App</title>
+
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        td ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        td ul li {
-            margin-bottom: 8px;
-        }
-        .item-name {
-            font-weight: bold;
-        }
-        .item-weight {
-            font-style: italic;
-        }
-        .item-cost {
-            color: green;
-        }
+        body { font-family: Arial; padding:20px; }
+        section { border:1px solid #ccc; padding:15px; margin-bottom:20px; }
+        table { border-collapse: collapse; width:100%; margin-top:10px;}
+        th, td { border:1px solid #ddd; padding:6px;}
+        button { margin-top:10px; }
     </style>
+
 </head>
 <body>
 
-<form th:action="@{/api/deliveries}" method="post" th:object="${delivery}">
-    <label for="provider">Поставщик:</label>
-    <select id="provider" name="provider.id">
-        <option th:each="provider : ${providers}" th:value="${provider.id}" th:text="${provider.name}"></option>
-    </select>
+<h1>Приёмка поставок</h1>
 
-    <div>
-        <label for="product1">Продукт 1:</label>
-        <select id="product1" name="products[0].product.id">
-            <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.name}"></option>
-        </select>
-        <label for="weight1">Вес (кг):</label>
-        <input type="number" id="weight1" name="products[0].weight" required step="0.1">
-    </div>
+<section>
+    <h2>Новая поставка</h2>
 
-    <div>
-        <label for="product2">Продукт 2:</label>
-        <select id="product2" name="products[1].product.id">
-            <option th:each="product : ${products}" th:value="${product.id}" th:text="${product.name}"></option>
-        </select>
-        <label for="weight2">Вес (кг):</label>
-        <input type="number" id="weight2" name="products[1].weight" required step="0.1">
-    </div>
+    <label>Поставщик:</label>
+    <select id="providerSelect"></select>
 
-    <br>
-    <label for="deliveryDate">Дата поставки:</label>
-    <input type="date" id="deliveryDate" name="deliveryDate" required>
-    <br>
-    <button type="submit">Добавить поставку</button>
-</form>
+    <br><br>
 
-<br>
-<form th:action="@{/api/deliveries/report}" method="get">
-    <label for="startDate">Начальная дата:</label>
-    <input type="date" id="startDate" name="startDate" required>
+    <label>Дата поставки:</label>
+    <input type="date" id="deliveryDate">
 
-    <label for="endDate">Конечная дата:</label>
-    <input type="date" id="endDate" name="endDate" required>
-    <br>
-    <button type="submit">Сформировать отчет</button>
-</form>
+    <h3>Продукты</h3>
 
-<div id="reportResult">
-    <h2>Отчет по поставкам</h2>
-
-    <table>
+    <table id="productsTable">
         <thead>
         <tr>
-            <th>Поставщик</th>
-            <th>Товары</th>
-            <th>Общий вес (кг)</th>
-            <th>Общая стоимость</th>
+            <th>Продукт</th>
+            <th>Вес</th>
+            <th></th>
         </tr>
         </thead>
-        <tbody>
-        <tr th:each="entry : ${reportData}">
-            <td th:text="${entry.key.name}"></td>
-            <td>
-                <ul>
-                    <li th:each="report : ${entry.value.getReport()}">
-                        <span class="item-name" th:text="${report.getKey().getName()}"></span>
-                        <span class="item-weight" th:text="'(' + ${report.getValue()} + ' кг)'"></span>
-                        <span class="item-cost" th:text="' - ' + ${report.getValue() * report.getKey().getPrice()}"></span>
-                    </li>
-                </ul>
-            </td>
-            <td th:text="${entry.value.totalWeight}"></td>
-            <td th:text="${entry.value.totalCost}"></td>
-        </tr>
-        </tbody>
+        <tbody></tbody>
     </table>
 
-</div>
+    <button onclick="addProductRow()">Добавить продукт</button>
+    <br>
+    <button onclick="submitDelivery()">Сохранить поставку</button>
+
+</section>
+
+<section>
+
+    <h2>Отчёт</h2>
+
+    <label>Начало:</label>
+    <input type="date" id="startDate">
+
+    <label>Конец:</label>
+    <input type="date" id="endDate">
+
+    <button onclick="loadReport()">Получить отчёт</button>
+
+    <div id="reportResult"></div>
+
+</section>
+
+<script>
+
+    let products = [];
+
+    function renderReport(data){
+
+        const container = document.getElementById('reportResult');
+        container.innerHTML = '';
+
+        const report = data.report;
+
+        Object.entries(report).forEach(([provider, info]) => {
+
+            const block = document.createElement('div');
+            block.style.border = '1px solid #999';
+            block.style.padding = '10px';
+            block.style.marginBottom = '15px';
+
+            const title = document.createElement('h3');
+            title.textContent = provider;
+
+            const totals = document.createElement('p');
+            totals.textContent =
+                `Вес: ${info.totalWeight} кг | Стоимость: ${info.totalCost}`;
+
+            const table = document.createElement('table');
+
+            table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Продукт</th>
+                    <th>Стоимость</th>
+                    <th>Вес</th>
+                </tr>
+            </thead>
+        `;
+
+            const tbody = document.createElement('tbody');
+
+            info.products.forEach(item => {
+
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                <td>${item.product.name}</td>
+                <td>${item.product.price}</td>
+                <td>${item.weight}</td>
+            `;
+
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+
+            block.appendChild(title);
+            block.appendChild(totals);
+            block.appendChild(table);
+
+            container.appendChild(block);
+        });
+    }
+
+
+
+    async function loadProviders(){
+        const res = await fetch('http://localhost:8081/api/providers');
+        const providers = await res.json();
+
+        console.log("providers:", providers);
+
+        const select = document.getElementById('providerSelect');
+
+        providers.forEach(p=>{
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name;
+            select.appendChild(opt);
+        });
+    }
+
+
+    async function loadProducts(){
+        const res = await fetch('http://localhost:8081/api/products');
+        products = await res.json();
+    }
+
+    function addProductRow(){
+
+        const tbody = document.querySelector('#productsTable tbody');
+        const tr = document.createElement('tr');
+
+        const productSelect = document.createElement('select');
+
+        products.forEach(p=>{
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name + " ("+p.price+")";
+            productSelect.appendChild(opt);
+        });
+
+        tr.innerHTML = `
+        <td></td>
+        <td><input type="number" step="0.1"></td>
+        <td><button onclick="this.closest('tr').remove()">Удалить</button></td>
+    `;
+
+        tr.children[0].appendChild(productSelect);
+
+        tbody.appendChild(tr);
+    }
+
+    async function submitDelivery(){
+
+        const providerId = document.getElementById('providerSelect').value;
+        const deliveryDate = document.getElementById('deliveryDate').value;
+
+        const rows = document.querySelectorAll('#productsTable tbody tr');
+
+        const deliveryProducts = [];
+
+        rows.forEach(r=>{
+            const productId = r.querySelector('select').value;
+            const weight = r.querySelector('input').value;
+
+            deliveryProducts.push({
+                productId: Number(productId),
+                weight: Number(weight)
+            });
+        });
+
+        const payload = {
+            providerId: Number(providerId),
+            deliveryDate: deliveryDate,
+            products: deliveryProducts
+        };
+
+        await fetch('http://localhost:8081/api/deliveries',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(payload)
+        });
+
+        alert('Поставка сохранена');
+    }
+
+    async function loadReport(){
+
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        const res = await fetch(
+            `http://localhost:8081/api/deliveries/report?startDate=${startDate}&endDate=${endDate}`
+        );
+
+        const data = await res.json();
+
+        renderReport(data);
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadProviders();
+        await loadProducts();
+    });
+
+
+</script>
 
 </body>
 </html>

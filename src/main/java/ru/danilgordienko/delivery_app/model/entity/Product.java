@@ -1,7 +1,9 @@
-package ru.danilgordienko.delivery_app.model;
+package ru.danilgordienko.delivery_app.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 
 
 @Data
@@ -16,5 +18,5 @@ public class Product {
     @Column(unique = true)
     private String name;
 
-    private Double price;
+    private BigDecimal price;
 }

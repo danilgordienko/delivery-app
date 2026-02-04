@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - delivery_app
+
+  delivery_app:
+    build:
+      context: .
+    container_name: delivery_app
+    environment:
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST}
+    depends_on:
+      - postgres
+    ports:
+      - "8081:8081"
+    networks:
+      - delivery_app
+volumes:
+  postgres_data:
+
+networks:
+  delivery_app:
+    external: true

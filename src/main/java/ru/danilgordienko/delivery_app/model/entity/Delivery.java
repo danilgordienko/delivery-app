@@ -1,11 +1,10 @@
-package ru.danilgordienko.delivery_app.model;
+package ru.danilgordienko.delivery_app.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 
 @Entity
@@ -21,10 +20,8 @@ public class Delivery {
     @JoinColumn(name = "provider_id")
     private Provider provider;
 
-    @ElementCollection
-    @CollectionTable(name = "delivery_products", joinColumns = @JoinColumn(name = "delivery_id"))
+    @OneToMany(mappedBy = "delivery", cascade = CascadeType.ALL)
     private List<DeliveryProduct> products;
 
     private LocalDate deliveryDate;
-
 }
